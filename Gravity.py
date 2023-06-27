@@ -85,6 +85,7 @@ class Platform(pygame.sprite.Sprite):
 
 # Create sprite groups
 all_sprites = pygame.sprite.Group()
+level_sprites = pygame.sprite.Group()
 platforms = pygame.sprite.Group()
 
 # Create player
@@ -93,15 +94,15 @@ all_sprites.add(player)
 
 # Generate random level
 def generate_level():
+    level_sprites.empty()
     platforms.empty()
-    all_sprites.remove(platforms)
     x = 0
     while x < WIDTH:
         gap = random.randint(*PLATFORM_GAP_RANGE)
         platform_width = random.randint(PLATFORM_WIDTH, PLATFORM_WIDTH + gap)
         platform = Platform(x, random.randint(100, HEIGHT - PLATFORM_HEIGHT), platform_width)
         platforms.add(platform)
-        all_sprites.add(platform)
+        level_sprites.add(platform)
         x += platform_width + gap
 
 # Generate initial level
@@ -109,7 +110,7 @@ generate_level()
 
 running = True
 while running:
-    # Process events
+    # Event handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -128,6 +129,7 @@ while running:
 
     # Render
     screen.fill(WHITE)
+    level_sprites.draw(screen)
     all_sprites.draw(screen)
 
     pygame.display.flip()
