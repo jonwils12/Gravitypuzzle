@@ -110,8 +110,8 @@ class Platform(pygame.sprite.Sprite):
         if self.rect.right < 0:
             self.kill()
 
-all_sprites = pygame.sprite.Group()
 player = Player()
+all_sprites = pygame.sprite.Group()
 all_sprites.add(player)
 
 generate_level()
