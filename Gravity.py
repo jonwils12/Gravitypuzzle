@@ -54,9 +54,10 @@ class Player(pygame.sprite.Sprite):
         self.velocity_y = 0
         self.is_jumping = False
 
-    def update(self):
+    def update(self, platforms):
         self.gravity()
         self.rect.y += self.velocity_y
+        self.check_collision(platforms)
 
     def jump(self):
         if not self.is_jumping:
@@ -65,6 +66,17 @@ class Player(pygame.sprite.Sprite):
 
     def gravity(self):
         self.velocity_y += PLAYER_GRAVITY
+
+    def check_collision(self, platforms):
+        collision_list = pygame.sprite.spritecollide(self, platforms, False)
+        for platform in collision_list:
+            if self.velocity_y > 0:
+                self.rect.bottom = platform.rect.top
+                self.velocity_y = 0
+                self.is_jumping = False
+            elif self.velocity_y < 0:
+                self.rect.top = platform.rect.bottom
+                self.velocity_y = 0
 
 class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -98,23 +110,26 @@ class Goal(pygame.sprite.Sprite):
         self.rect.y = y
 
 # Create player object
-player = Player(50, 50)
+player = Player(50, WINDOW_HEIGHT - 50)
 player_group = pygame.sprite.Group()
 player_group.add(player)
 
-# Create platform objects
+# Create platforms
 platforms = [
-    Platform(0, WINDOW_HEIGHT - PLATFORM_HEIGHT),  # Start platform
-    Platform(200, 300),
-    Platform(500, 200)
+    Platform(0, WINDOW_HEIGHT - 20),
+    Platform(150, WINDOW_HEIGHT - 70),
+    Platform(300, WINDOW_HEIGHT - 120),
+    Platform(450, WINDOW_HEIGHT - 170),
+    Platform(600, WINDOW_HEIGHT - 220),
+    Platform(750, WINDOW_HEIGHT - 270),
 ]
 platform_group = pygame.sprite.Group()
 platform_group.add(platforms)
 
-# Create obstacle objects
+# Create obstacles
 obstacles = [
-    Obstacle(400, 100),
-    Obstacle(600, 150)
+    Obstacle(400, WINDOW_HEIGHT - 50),
+    Obstacle(600, WINDOW_HEIGHT - 100)
 ]
 obstacle_group = pygame.sprite.Group()
 obstacle_group.add(obstacles)
@@ -160,7 +175,7 @@ while running:
         # Add your code here to handle winning condition
 
     # Update game objects
-    player_group.update()
+    player_group.update(platform_group)
     obstacle_group.update()
 
     # Draw game objects
