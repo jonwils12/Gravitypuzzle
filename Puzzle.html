@@ -37,6 +37,14 @@
             { x: 600, y: 100, width: 40, height: 40, color: "red", velocityX: -1 }
         ];
 
+        var endGoal = {
+            x: 700,
+            y: 150,
+            width: 50,
+            height: 50,
+            color: "green"
+        };
+
         var keys = {};
 
         function gameLoop() {
@@ -99,12 +107,11 @@
                 ) {
                     // Collision with obstacle
                     console.log("Collision with obstacle!");
-                    // Add your code here to handle collision
+                    // Add your code here to handle collision with obstacle
                 }
             }
 
-            // Check if player reaches the end goal
-            var endGoal = { x: 700, y: 150, width: 50, height: 50 };
+            // Check collision with end goal
             if (
                 player.x < endGoal.x + endGoal.width &&
                 player.x + player.width > endGoal.x &&
@@ -140,7 +147,6 @@
             }
 
             // Draw end goal
-            var endGoal = { x: 700, y: 150, width: 50, height: 50, color: "green" };
             context.fillStyle = endGoal.color;
             context.fillRect(endGoal.x, endGoal.y, endGoal.width, endGoal.height);
         }
