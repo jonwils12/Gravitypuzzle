@@ -113,7 +113,7 @@ platform_group.add(platforms)
 
 # Create obstacle objects
 obstacles = [
-    Obstacle(300, 250),
+    Obstacle(400, 100),
     Obstacle(600, 150)
 ]
 obstacle_group = pygame.sprite.Group()
@@ -174,4 +174,3 @@ while running:
     clock.tick(60)
 
 pygame.quit()
-
