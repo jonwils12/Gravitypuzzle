@@ -62,6 +62,11 @@ class Player(pygame.sprite.Sprite):
             self.vel_y = -PLAYER_JUMP_FORCE
             self.is_jumping = True
 
+        if keys[pygame.K_RIGHT]:
+            self.rect.x += PLAYER_SPEED
+        if keys[pygame.K_LEFT]:
+            self.rect.x -= PLAYER_SPEED
+
     def reset(self):
         self.rect.x = 50
         self.rect.y = HEIGHT // 2
@@ -112,13 +117,13 @@ while running:
     all_sprites.update()
 
     # Check if player falls off the screen
-    if player.rect.top > HEIGHT:
+    if player.rect.y > HEIGHT:
         player.reset()
 
-    # Check if player reaches the end of the level
-    if player.rect.right >= WIDTH:
-        player.reset()
+    # Check if player reaches the end
+    if player.rect.x > WIDTH:
         generate_level()
+        player.reset()
 
     # Render
     screen.fill(WHITE)
