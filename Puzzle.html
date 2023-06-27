@@ -32,6 +32,11 @@
             { x: 500, y: 200, width: 150, height: 20, color: "gray" }
         ];
 
+        var obstacles = [
+            { x: 300, y: 250, width: 30, height: 30, color: "red", velocityX: 2 },
+            { x: 600, y: 100, width: 40, height: 40, color: "red", velocityX: -1 }
+        ];
+
         var keys = {};
 
         function gameLoop() {
@@ -80,8 +85,26 @@
                 }
             }
 
+            // Update obstacle positions and check collision
+            for (var i = 0; i < obstacles.length; i++) {
+                var obstacle = obstacles[i];
+                obstacle.x += obstacle.velocityX;
+
+                // Check collision with player
+                if (
+                    player.x < obstacle.x + obstacle.width &&
+                    player.x + player.width > obstacle.x &&
+                    player.y < obstacle.y + obstacle.height &&
+                    player.y + player.height > obstacle.y
+                ) {
+                    // Collision with obstacle
+                    console.log("Collision with obstacle!");
+                    // Add your code here to handle collision
+                }
+            }
+
             // Check if player reaches the end goal
-            var endGoal = { x: 700, y: 150, width: 50, height: 50, color: "green" };
+            var endGoal = { x: 700, y: 150, width: 50, height: 50 };
             if (
                 player.x < endGoal.x + endGoal.width &&
                 player.x + player.width > endGoal.x &&
@@ -90,11 +113,12 @@
             ) {
                 // Player reached the end goal
                 console.log("Player reached the end goal!");
-                // Add your code here to handle winning the game
+                // Add your code here to handle winning condition
             }
         }
 
         function draw() {
+            // Clear the canvas
             context.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw player
@@ -108,11 +132,12 @@
                 context.fillRect(platform.x, platform.y, platform.width, platform.height);
             }
 
-            // Draw obstacles or enemies (sample code)
-            // Replace this code with your own logic for obstacles/enemies
-            var obstacle = { x: 300, y: 250, width: 30, height: 30, color: "red" };
-            context.fillStyle = obstacle.color;
-            context.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            // Draw obstacles
+            for (var i = 0; i < obstacles.length; i++) {
+                var obstacle = obstacles[i];
+                context.fillStyle = obstacle.color;
+                context.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            }
 
             // Draw end goal
             var endGoal = { x: 700, y: 150, width: 50, height: 50, color: "green" };
