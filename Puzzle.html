@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Gravity-Based Puzzle Game</title>
+    <title>Gravity-based Puzzle Game</title>
     <style>
         canvas {
             border: 1px solid black;
@@ -15,83 +15,89 @@
         var canvas = document.getElementById("gameCanvas");
         var context = canvas.getContext("2d");
 
-        // Player object
         var player = {
             x: 50,
             y: 50,
-            width: 20,
-            height: 20,
-            color: "blue",
-            gravity: 0.2,
+            width: 50,
+            height: 50,
+            color: "#0000FF",
             velocityX: 0,
             velocityY: 0,
+            speed: 3,
             isJumping: false
         };
 
-        // Platform objects
         var platforms = [
-            { x: 200, y: 150, width: 150, height: 10, color: "gray" },
-            { x: 400, y: 300, width: 200, height: 10, color: "gray" }
+            { x: 0, y: canvas.height - 20, width: canvas.width, height: 20, color: "#CCCCCC" },
+            { x: 200, y: 300, width: 200, height: 20, color: "#CCCCCC" },
+            { x: 500, y: 200, width: 200, height: 20, color: "#CCCCCC" }
         ];
 
-        // Enemy objects
         var enemies = [
-            { x: 300, y: 200, width: 30, height: 30, color: "red", speed: 1 },
-            { x: 600, y: 350, width: 30, height: 30, color: "red", speed: -1 }
+            { x: 400, y: 280, width: 40, height: 20, color: "#FF0000", velocityX: 2 },
+            { x: 700, y: 180, width: 40, height: 20, color: "#FF0000", velocityX: -2 }
         ];
 
-        // Obstacle objects
         var obstacles = [
-            { x: 350, y: 100, width: 20, height: 100, color: "black" },
-            { x: 550, y: 250, width: 20, height: 100, color: "black" }
+            { x: 300, y: 260, width: 30, height: 30, color: "#FF00FF" },
+            { x: 600, y: 160, width: 30, height: 30, color: "#FF00FF" }
         ];
 
-        // End goal object
-        var endGoal = { x: 700, y: 350, width: 50, height: 50, color: "green" };
+        var endGoal = {
+            x: canvas.width - 60,
+            y: canvas.height - 80,
+            width: 40,
+            height: 60,
+            color: "#00FF00"
+        };
 
-        // Key states to track pressed keys
         var keys = {};
 
         // Game loop
         function gameLoop() {
+            processInput();
             update();
             draw();
             requestAnimationFrame(gameLoop);
         }
 
-        // Update game logic
-        function update() {
-            // Apply gravity to player's velocity
-            player.velocityY += player.gravity;
+        // Process player input
+        function processInput() {
+            player.velocityX = 0;
 
-            // Apply horizontal movement based on arrow key states
-            if (keys["ArrowLeft"]) {
-                player.velocityX = -3;
-            } else if (keys["ArrowRight"]) {
-                player.velocityX = 3;
-            } else {
-                player.velocityX = 0;
+            if (keys.ArrowLeft) {
+                player.velocityX = -player.speed;
+            } else if (keys.ArrowRight) {
+                player.velocityX = player.speed;
             }
 
-            // Update player's position based on velocity
+            if (keys.ArrowUp && !player.isJumping) {
+                player.velocityY = -player.speed * 2;
+                player.isJumping = true;
+            }
+        }
+
+        // Update game logic
+        function update() {
+            // Update player position
             player.x += player.velocityX;
             player.y += player.velocityY;
+
+            // Apply gravity to the player
+            player.velocityY += 0.2;
 
             // Check collision with platforms
             for (var i = 0; i < platforms.length; i++) {
                 var platform = platforms[i];
                 if (
                     player.y + player.height > platform.y &&
-                    player.y < platform.y + platform.height &&
+                    player.y + player.height < platform.y + player.velocityY &&
                     player.x + player.width > platform.x &&
                     player.x < platform.x + platform.width
                 ) {
-                    // Colliding with a platform, stop vertical velocity and allow jumping
+                    player.y = platform.y - player.height;
                     player.velocityY = 0;
                     player.isJumping = false;
-
-                    // Move player out of the platform if partially inside
-                    player.y = Math.min(player.y, platform.y + platform.height);
                 }
             }
 
@@ -99,12 +105,11 @@
             for (var i = 0; i < enemies.length; i++) {
                 var enemy = enemies[i];
                 if (
-                    player.y + player.height > enemy.y &&
-                    player.y < enemy.y + enemy.height &&
+                    player.x < enemy.x + enemy.width &&
                     player.x + player.width > enemy.x &&
-                    player.x < enemy.x + enemy.width
+                    player.y < enemy.y + enemy.height &&
+                    player.y + player.height > enemy.y
                 ) {
-                    // Colliding with an enemy, game over
                     gameOver();
                     return;
                 }
@@ -114,25 +119,23 @@
             for (var i = 0; i < obstacles.length; i++) {
                 var obstacle = obstacles[i];
                 if (
-                    player.y + player.height > obstacle.y &&
-                    player.y < obstacle.y + obstacle.height &&
+                    player.x < obstacle.x + obstacle.width &&
                     player.x + player.width > obstacle.x &&
-                    player.x < obstacle.x + obstacle.width
+                    player.y < obstacle.y + obstacle.height &&
+                    player.y + player.height > obstacle.y
                 ) {
-                    // Colliding with an obstacle, game over
                     gameOver();
                     return;
                 }
             }
 
-            // Check collision with the end goal
+            // Check collision with end goal
             if (
-                player.y + player.height > endGoal.y &&
-                player.y < endGoal.y + endGoal.height &&
+                player.x < endGoal.x + endGoal.width &&
                 player.x + player.width > endGoal.x &&
-                player.x < endGoal.x + endGoal.width
+                player.y < endGoal.y + endGoal.height &&
+                player.y + player.height > endGoal.y
             ) {
-                // Reached the end goal, game win
                 gameWin();
                 return;
             }
@@ -175,13 +178,13 @@
 
         // Game over logic
         function gameOver() {
-            alert("Game Over");
+            alert("Game Over!");
             resetGame();
         }
 
         // Game win logic
         function gameWin() {
-            alert("You Win!");
+            alert("Congratulations! You Win!");
             resetGame();
         }
 
@@ -191,36 +194,19 @@
             player.y = 50;
             player.velocityX = 0;
             player.velocityY = 0;
+            player.isJumping = false;
         }
 
-        // Handle keydown event
-        function handleKeyDown(event) {
-            keys[event.code] = true;
+        // Keyboard event listeners
+        window.addEventListener("keydown", function(event) {
+            keys[event.key] = true;
+        });
 
-            // Spacebar to jump
-            if (event.code === "Space") {
-                handleJump();
-            }
-        }
+        window.addEventListener("keyup", function(event) {
+            keys[event.key] = false;
+        });
 
-        // Handle keyup event
-        function handleKeyUp(event) {
-            keys[event.code] = false;
-        }
-
-        // Handle jump when spacebar is pressed
-        function handleJump() {
-            if (!player.isJumping) {
-                player.velocityY = -5;
-                player.isJumping = true;
-            }
-        }
-
-        // Add event listeners for keydown and keyup events
-        document.addEventListener("keydown", handleKeyDown);
-        document.addEventListener("keyup", handleKeyUp);
-
-        // Start the game loop
+        // Start the game
         gameLoop();
     </script>
 </body>
