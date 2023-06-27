@@ -20,6 +20,7 @@ GREEN = (0, 255, 0)
 clock = pygame.time.Clock()
 gravity = 0.5
 jump_force = 10
+move_speed = 5
 player_size = 30
 player_pos = [50, HEIGHT // 2]
 player_vel = 0
@@ -53,6 +54,14 @@ while True:
                     has_won = False
                     level = 1
                     player_pos = [50, HEIGHT // 2]
+            elif event.key == pygame.K_LEFT:
+                player_pos[0] -= move_speed
+            elif event.key == pygame.K_RIGHT:
+                player_pos[0] += move_speed
+            elif event.key == pygame.K_UP:
+                player_pos[1] -= move_speed
+            elif event.key == pygame.K_DOWN:
+                player_pos[1] += move_speed
 
     # Apply gravity to the player
     player_vel += gravity
@@ -88,11 +97,7 @@ while True:
     # Draw the obstacle
     pygame.draw.rect(window, RED, (obstacle_pos[0], obstacle_pos[1], obstacle_width, obstacle_height))
 
-    # Draw game level
-    level_text = font.render("Level: " + str(level), True, BLACK)
-    window.blit(level_text, (10, 10))
-
-    # Check game over or win conditions
+    # Draw game text
     if is_game_over:
         game_over_text = font.render("Game Over! Press Space to Restart", True, BLACK)
         window.blit(game_over_text, (WIDTH // 2 - 200, HEIGHT // 2 - 50))
