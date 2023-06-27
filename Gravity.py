@@ -33,13 +33,13 @@ clock = pygame.time.Clock()
 
 # Player class
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((PLAYER_WIDTH, PLAYER_HEIGHT))
         self.image.fill(PLAYER_COLOR)
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
+        self.rect.centerx = WIDTH // 2
+        self.rect.bottom = HEIGHT - 10
         self.vel_y = 0
         self.is_jumping = False
 
@@ -57,10 +57,6 @@ class Player(pygame.sprite.Sprite):
                 elif self.vel_y < 0:
                     self.rect.top = platform.rect.bottom
                     self.vel_y = 0
-
-        # Check if player falls off the screen or lands on the bottom boundary
-        if self.rect.y > HEIGHT or self.rect.top > HEIGHT:
-            self.kill()
 
     def jump(self):
         if not self.is_jumping:
@@ -82,15 +78,15 @@ all_sprites = pygame.sprite.Group()
 platforms = pygame.sprite.Group()
 
 # Create player
-player = Player(100, HEIGHT // 2)
+player = Player()
 all_sprites.add(player)
 
-# Generate platforms for the initial level
+# Generate random platforms
 def generate_platforms():
     platforms.empty()
     for _ in range(10):
         x = random.randint(0, WIDTH - PLATFORM_WIDTH)
-        y = random.randint(0, HEIGHT - PLATFORM_HEIGHT)
+        y = random.randint(100, HEIGHT - PLATFORM_HEIGHT)
         platform = Platform(x, y)
         all_sprites.add(platform)
         platforms.add(platform)
@@ -98,8 +94,6 @@ def generate_platforms():
 generate_platforms()
 
 running = True
-left_pressed = False
-right_pressed = False
 
 while running:
     # Process events
@@ -107,30 +101,17 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                left_pressed = True
-            elif event.key == pygame.K_RIGHT:
-                right_pressed = True
-            elif event.key == pygame.K_SPACE:
+            if event.key == pygame.K_SPACE:
                 player.jump()
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_LEFT:
-                left_pressed = False
-            elif event.key == pygame.K_RIGHT:
-                right_pressed = False
-
-    # Update player movement
-    if left_pressed:
-        player.rect.x -= PLAYER_SPEED
-    if right_pressed:
-        player.rect.x += PLAYER_SPEED
 
     # Update player and platforms
     all_sprites.update()
 
     # Check if player falls off the screen
     if player.rect.top > HEIGHT:
-        player.kill()
+        player.rect.bottom = HEIGHT
+        player.vel_y = 0
+        player.is_jumping = False
 
     # Check if player reaches the right edge of the screen
     if player.rect.right >= WIDTH:
