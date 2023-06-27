@@ -79,6 +79,32 @@
                     player.isJumping = false;
                 }
             }
+
+            // Check collision with obstacles or enemies (sample code)
+            // Replace this code with your own logic for obstacles/enemies
+            var obstacle = { x: 300, y: 250, width: 30, height: 30, color: "red" };
+            if (
+                player.x < obstacle.x + obstacle.width &&
+                player.x + player.width > obstacle.x &&
+                player.y < obstacle.y + obstacle.height &&
+                player.y + player.height > obstacle.y
+            ) {
+                // Collision detected with obstacle
+                console.log("Collision with obstacle!");
+            }
+
+            // Check if player reaches the end goal (sample code)
+            // Replace this code with your own logic for end goal
+            var endGoal = { x: 700, y: 150, width: 50, height: 50, color: "green" };
+            if (
+                player.x < endGoal.x + endGoal.width &&
+                player.x + player.width > endGoal.x &&
+                player.y < endGoal.y + endGoal.height &&
+                player.y + player.height > endGoal.y
+            ) {
+                // Player reached the end goal
+                console.log("Player reached the end goal!");
+            }
         }
 
         function draw() {
@@ -94,6 +120,18 @@
                 context.fillStyle = platform.color;
                 context.fillRect(platform.x, platform.y, platform.width, platform.height);
             }
+
+            // Draw obstacles or enemies (sample code)
+            // Replace this code with your own logic for obstacles/enemies
+            var obstacle = { x: 300, y: 250, width: 30, height: 30, color: "red" };
+            context.fillStyle = obstacle.color;
+            context.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+
+            // Draw end goal (sample code)
+            // Replace this code with your own logic for end goal
+            var endGoal = { x: 700, y: 150, width: 50, height: 50, color: "green" };
+            context.fillStyle = endGoal.color;
+            context.fillRect(endGoal.x, endGoal.y, endGoal.width, endGoal.height);
         }
 
         // Keyboard event listeners
