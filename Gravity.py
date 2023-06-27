@@ -15,6 +15,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
 
 # Define game variables
 clock = pygame.time.Clock()
@@ -26,17 +27,71 @@ player_pos = [50, HEIGHT // 2]
 player_vel = 0
 level = 1
 max_levels = 3
-goal_pos = [WIDTH - 50, HEIGHT - 50]
-obstacle_pos = [WIDTH // 2, HEIGHT - 50]
-obstacle_width = 100
-obstacle_height = 20
+obstacle_width = 40
+obstacle_height = 40
+
+# Define maze layouts for each level
+maze_layouts = [
+    [
+        "############",
+        "#P         #",
+        "#  ####### #",
+        "#        # #",
+        "#  ####### #",
+        "#         E#",
+        "############",
+    ],
+    [
+        "############",
+        "#P         #",
+        "# #######  #",
+        "#        # #",
+        "#  ###   # #",
+        "#  #E#     #",
+        "############",
+    ],
+    [
+        "############",
+        "#P       E #",
+        "# #######  #",
+        "#        # #",
+        "#  ###   # #",
+        "#  #       #",
+        "############",
+    ],
+]
+
+# Load game fonts
+font = pygame.font.Font(None, 36)
+
+# Load maze images
+maze_images = {
+    "#": pygame.image.load("wall.png").convert(),
+    "P": pygame.image.load("start.png").convert_alpha(),
+    "E": pygame.image.load("end.png").convert_alpha(),
+}
+
+# Set image transparency
+for image in maze_images.values():
+    image.set_colorkey((255, 255, 255))
 
 # Define game states
 is_game_over = False
 has_won = False
 
-# Load game fonts
-font = pygame.font.Font(None, 36)
+# Load the maze layout for the current level
+maze_layout = maze_layouts[level - 1]
+maze_width = len(maze_layout[0]) * obstacle_width
+maze_height = len(maze_layout) * obstacle_height
+
+# Create maze obstacles based on the layout
+obstacles = []
+for row_index, row in enumerate(maze_layout):
+    for col_index, cell in enumerate(row):
+        if cell != " ":
+            x = col_index * obstacle_width
+            y = row_index * obstacle_height
+            obstacles.append(pygame.Rect(x, y, obstacle_width, obstacle_height))
 
 # Game loop
 while True:
@@ -56,50 +111,76 @@ while True:
                     has_won = False
                     level = 1
                     player_pos = [50, HEIGHT // 2]
+                    maze_layout = maze_layouts[level - 1]
+                    maze_width = len(maze_layout[0]) * obstacle_width
+                    maze_height = len(maze_layout) * obstacle_height
+                    obstacles.clear()
+                    for row_index, row in enumerate(maze_layout):
+                        for col_index, cell in enumerate(row):
+                            if cell != " ":
+                                x = col_index * obstacle_width
+                                y = row_index * obstacle_height
+                                obstacles.append(pygame.Rect(x, y, obstacle_width, obstacle_height))
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT]:
-        player_pos[0] -= move_speed * dt
-    if keys[pygame.K_RIGHT]:
-        player_pos[0] += move_speed * dt
-    if keys[pygame.K_UP]:
-        player_pos[1] -= move_speed * dt
-    if keys[pygame.K_DOWN]:
-        player_pos[1] += move_speed * dt
+    if not is_game_over:
+        keys = pygame.key.get_pressed()
+        player_vel += gravity
 
-    # Apply gravity to the player
-    player_vel += gravity * dt
-    player_pos[1] += player_vel * dt
+        # Move the player horizontally
+        if keys[pygame.K_LEFT]:
+            player_pos[0] -= move_speed * dt
+        if keys[pygame.K_RIGHT]:
+            player_pos[0] += move_speed * dt
 
-    # Check for collision with obstacles
-    if player_pos[1] >= HEIGHT - player_size:
-        player_pos[1] = HEIGHT - player_size
-        player_vel = 0
+        # Move the player vertically
+        player_pos[1] += player_vel * dt
 
-    # Check for collision with the goal
-    if player_pos[0] + player_size >= goal_pos[0] and player_pos[1] + player_size >= goal_pos[1]:
-        if level == max_levels:
-            has_won = True
-        else:
-            level += 1
-            player_pos = [50, HEIGHT // 2]
+        # Check collision with maze obstacles
+        player_rect = pygame.Rect(player_pos[0], player_pos[1], player_size, player_size)
+        for obstacle in obstacles:
+            if player_rect.colliderect(obstacle):
+                if player_vel > 0:  # Player hits the obstacle from above
+                    player_pos[1] = obstacle.top - player_size
+                    player_vel = 0
+                elif player_vel < 0:  # Player hits the obstacle from below
+                    player_pos[1] = obstacle.bottom
+                    player_vel = 0
 
-    # Check for collision with the obstacle
-    if player_pos[0] + player_size >= obstacle_pos[0] and player_pos[0] <= obstacle_pos[0] + obstacle_width:
-        if player_pos[1] + player_size >= obstacle_pos[1] and player_pos[1] <= obstacle_pos[1] + obstacle_height:
+        # Check if player reaches the end point
+        end_rect = pygame.Rect(maze_width - obstacle_width, HEIGHT - obstacle_height, obstacle_width, obstacle_height)
+        if player_rect.colliderect(end_rect):
+            if level < max_levels:
+                level += 1
+                player_pos = [50, HEIGHT // 2]
+                maze_layout = maze_layouts[level - 1]
+                maze_width = len(maze_layout[0]) * obstacle_width
+                maze_height = len(maze_layout) * obstacle_height
+                obstacles.clear()
+                for row_index, row in enumerate(maze_layout):
+                    for col_index, cell in enumerate(row):
+                        if cell != " ":
+                            x = col_index * obstacle_width
+                            y = row_index * obstacle_height
+                            obstacles.append(pygame.Rect(x, y, obstacle_width, obstacle_height))
+            else:
+                has_won = True
+
+        # Check if player falls off the screen
+        if player_pos[1] > HEIGHT:
             is_game_over = True
 
     # Clear the window
     window.fill(WHITE)
 
+    # Draw the maze obstacles
+    for obstacle in obstacles:
+        window.blit(maze_images["#"], obstacle)
+
     # Draw the player
-    pygame.draw.rect(window, BLACK, (player_pos[0], player_pos[1], player_size, player_size))
+    window.blit(maze_images["P"], (player_pos[0], player_pos[1]))
 
-    # Draw the goal
-    pygame.draw.rect(window, GREEN, (goal_pos[0], goal_pos[1], player_size, player_size))
-
-    # Draw the obstacle
-    pygame.draw.rect(window, RED, (obstacle_pos[0], obstacle_pos[1], obstacle_width, obstacle_height))
+    # Draw the end point
+    window.blit(maze_images["E"], (maze_width - obstacle_width, HEIGHT - obstacle_height))
 
     # Draw game text
     if is_game_over:
