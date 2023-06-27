@@ -58,6 +58,13 @@ class Player(pygame.sprite.Sprite):
                     self.rect.top = platform.rect.bottom
                     self.vel_y = 0
 
+        # Handle player movement
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            self.rect.x -= PLAYER_SPEED
+        if keys[pygame.K_RIGHT]:
+            self.rect.x += PLAYER_SPEED
+
     def jump(self):
         if not self.is_jumping:
             self.vel_y = -PLAYER_JUMP_FORCE
