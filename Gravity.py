@@ -94,6 +94,7 @@ all_sprites.add(player)
 # Generate random level
 def generate_level():
     platforms.empty()
+    all_sprites.remove(platforms)
     x = 0
     while x < WIDTH:
         gap = random.randint(*PLATFORM_GAP_RANGE)
