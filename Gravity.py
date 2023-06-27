@@ -56,8 +56,8 @@ class Player(pygame.sprite.Sprite):
                     self.rect.top = platform.rect.bottom
                     self.vel_y = 0
 
-        # Check if player falls off the screen
-        if self.rect.y > HEIGHT:
+        # Check if player falls off the screen or lands on the bottom boundary
+        if self.rect.y > HEIGHT or self.rect.top > HEIGHT:
             self.kill()
 
     def jump(self):
@@ -89,6 +89,11 @@ for i in range(10):
     all_sprites.add(platform)
     platforms.add(platform)
 
+# Create bottom boundary
+bottom_boundary = Platform(0, HEIGHT)
+bottom_boundary.rect.width = WIDTH
+all_sprites.add(bottom_boundary)
+
 running = True
 while running:
     # Process events
@@ -114,17 +119,15 @@ while running:
             all_sprites.add(platform)
             platforms.add(platform)
 
-    # Draw
+    # Render
     screen.fill(WHITE)
     all_sprites.draw(screen)
 
-    # Draw score
+    # Draw score and level
     font = pygame.font.Font(None, 36)
-    text = font.render(f"Score: {score}", True, BLACK)
-    screen.blit(text, (10, 10))
-
-    # Draw level
+    score_text = font.render(f"Score: {score}", True, BLACK)
     level_text = font.render(f"Level: {level}", True, BLACK)
+    screen.blit(score_text, (10, 10))
     screen.blit(level_text, (10, 50))
 
     pygame.display.flip()
