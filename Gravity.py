@@ -1,191 +1,105 @@
 import pygame
+import sys
 
 # Initialize Pygame
 pygame.init()
 
-# Game window dimensions
-WINDOW_WIDTH = 800
-WINDOW_HEIGHT = 400
+# Set up the game window
+WIDTH = 800
+HEIGHT = 600
+window = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Gravity Puzzle Game")
 
-# Colors
+# Define colors
 BLACK = (0, 0, 0)
-BLUE = (0, 0, 255)
-GRAY = (128, 128, 128)
+WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
-# Player properties
-PLAYER_WIDTH = 20
-PLAYER_HEIGHT = 20
-PLAYER_COLOR = BLUE
-PLAYER_JUMP_FORCE = -10
-PLAYER_GRAVITY = 0.5
-
-# Platform properties
-PLATFORM_WIDTH = 150
-PLATFORM_HEIGHT = 20
-PLATFORM_COLOR = GRAY
-
-# Obstacle properties
-OBSTACLE_WIDTH = 30
-OBSTACLE_HEIGHT = 30
-OBSTACLE_COLOR = RED
-OBSTACLE_VELOCITY = 2
-
-# End goal properties
-GOAL_WIDTH = 50
-GOAL_HEIGHT = 50
-GOAL_COLOR = GREEN
-
-# Create the game window
-window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-pygame.display.set_caption("Gravity Puzzle Game")
-
+# Define game variables
 clock = pygame.time.Clock()
+gravity = 0.5
+jump_force = 10
+player_size = 30
+player_pos = [50, HEIGHT // 2]
+player_vel = 0
+level = 1
+max_levels = 3
+goal_pos = [WIDTH - 50, HEIGHT - 50]
+obstacle_pos = [WIDTH // 2, HEIGHT - 50]
+obstacle_width = 100
+obstacle_height = 20
 
-class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((PLAYER_WIDTH, PLAYER_HEIGHT))
-        self.image.fill(PLAYER_COLOR)
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.velocity_y = 0
-        self.is_jumping = False
+# Define game states
+is_game_over = False
+has_won = False
 
-    def update(self, platforms):
-        self.gravity()
-        self.rect.y += self.velocity_y
-        self.check_collision(platforms)
+# Load game fonts
+font = pygame.font.Font(None, 36)
 
-    def jump(self):
-        if not self.is_jumping:
-            self.velocity_y = PLAYER_JUMP_FORCE
-            self.is_jumping = True
-
-    def gravity(self):
-        self.velocity_y += PLAYER_GRAVITY
-
-    def check_collision(self, platforms):
-        collision_list = pygame.sprite.spritecollide(self, platforms, False)
-        for platform in collision_list:
-            if self.velocity_y > 0:
-                self.rect.bottom = platform.rect.top
-                self.velocity_y = 0
-                self.is_jumping = False
-            elif self.velocity_y < 0:
-                self.rect.top = platform.rect.bottom
-                self.velocity_y = 0
-
-class Platform(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((PLATFORM_WIDTH, PLATFORM_HEIGHT))
-        self.image.fill(PLATFORM_COLOR)
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-
-class Obstacle(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((OBSTACLE_WIDTH, OBSTACLE_HEIGHT))
-        self.image.fill(OBSTACLE_COLOR)
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.velocity_x = OBSTACLE_VELOCITY
-
-    def update(self):
-        self.rect.x += self.velocity_x
-
-class Goal(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((GOAL_WIDTH, GOAL_HEIGHT))
-        self.image.fill(GOAL_COLOR)
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-
-# Create player object
-player = Player(50, WINDOW_HEIGHT - 50)
-player_group = pygame.sprite.Group()
-player_group.add(player)
-
-# Create platforms
-platforms = [
-    Platform(0, WINDOW_HEIGHT - 20),
-    Platform(150, WINDOW_HEIGHT - 70),
-    Platform(300, WINDOW_HEIGHT - 120),
-    Platform(450, WINDOW_HEIGHT - 170),
-    Platform(600, WINDOW_HEIGHT - 220),
-    Platform(750, WINDOW_HEIGHT - 270),
-]
-platform_group = pygame.sprite.Group()
-platform_group.add(platforms)
-
-# Create obstacles
-obstacles = [
-    Obstacle(400, WINDOW_HEIGHT - 50),
-    Obstacle(600, WINDOW_HEIGHT - 100)
-]
-obstacle_group = pygame.sprite.Group()
-obstacle_group.add(obstacles)
-
-# Create end goal object
-goal = Goal(WINDOW_WIDTH - GOAL_WIDTH, WINDOW_HEIGHT - GOAL_HEIGHT)
-goal_group = pygame.sprite.Group()
-goal_group.add(goal)
-
-running = True
-
-while running:
+# Game loop
+while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            pygame.quit()
+            sys.exit()
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                player.jump()
+                if not is_game_over:
+                    player_vel = -jump_force
+                else:
+                    is_game_over = False
+                    has_won = False
+                    level = 1
+                    player_pos = [50, HEIGHT // 2]
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT]:
-        player.rect.x -= 5
-    if keys[pygame.K_RIGHT]:
-        player.rect.x += 5
+    # Apply gravity to the player
+    player_vel += gravity
+    player_pos[1] += player_vel
 
-    # Check collision with platforms
-    collision_platform = pygame.sprite.spritecollide(player, platform_group, False)
-    if collision_platform:
-        player.rect.bottom = collision_platform[0].rect.top
-        player.velocity_y = 0
-        player.is_jumping = False
+    # Check for collision with obstacles
+    if player_pos[1] >= HEIGHT - player_size:
+        player_pos[1] = HEIGHT - player_size
+        player_vel = 0
 
-    # Check collision with obstacles
-    collision_obstacle = pygame.sprite.spritecollide(player, obstacle_group, False)
-    if collision_obstacle:
-        running = False
+    # Check for collision with the goal
+    if player_pos[0] + player_size >= goal_pos[0] and player_pos[1] + player_size >= goal_pos[1]:
+        if level == max_levels:
+            has_won = True
+        else:
+            level += 1
+            player_pos = [50, HEIGHT // 2]
 
-    # Check collision with goal
-    collision_goal = pygame.sprite.spritecollide(player, goal_group, False)
-    if collision_goal:
-        print("Player reached the goal!")
-        # Add your code here to handle winning condition
+    # Check for collision with the obstacle
+    if player_pos[0] + player_size >= obstacle_pos[0] and player_pos[0] <= obstacle_pos[0] + obstacle_width:
+        if player_pos[1] + player_size >= obstacle_pos[1] and player_pos[1] <= obstacle_pos[1] + obstacle_height:
+            is_game_over = True
 
-    # Update game objects
-    player_group.update(platform_group)
-    obstacle_group.update()
+    # Clear the window
+    window.fill(WHITE)
 
-    # Draw game objects
-    window.fill(BLACK)
-    player_group.draw(window)
-    platform_group.draw(window)
-    obstacle_group.draw(window)
-    goal_group.draw(window)
+    # Draw the player
+    pygame.draw.rect(window, BLACK, (player_pos[0], player_pos[1], player_size, player_size))
 
-    pygame.display.flip()
+    # Draw the goal
+    pygame.draw.rect(window, GREEN, (goal_pos[0], goal_pos[1], player_size, player_size))
+
+    # Draw the obstacle
+    pygame.draw.rect(window, RED, (obstacle_pos[0], obstacle_pos[1], obstacle_width, obstacle_height))
+
+    # Draw game level
+    level_text = font.render("Level: " + str(level), True, BLACK)
+    window.blit(level_text, (10, 10))
+
+    # Check game over or win conditions
+    if is_game_over:
+        game_over_text = font.render("Game Over! Press Space to Restart", True, BLACK)
+        window.blit(game_over_text, (WIDTH // 2 - 200, HEIGHT // 2 - 50))
+    elif has_won:
+        win_text = font.render("You Win! Press Space to Restart", True, BLACK)
+        window.blit(win_text, (WIDTH // 2 - 150, HEIGHT // 2 - 50))
+
+    # Update the window
+    pygame.display.update()
     clock.tick(60)
-
-pygame.quit()
