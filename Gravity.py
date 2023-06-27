@@ -141,7 +141,7 @@ while running:
         generate_platforms()
 
     # Check if player collides with the bottom boundary
-    if pygame.sprite.spritecollide(player, platforms, False):
+    if player.rect.top > HEIGHT:
         player.kill()
 
     # Render
