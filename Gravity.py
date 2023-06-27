@@ -95,10 +95,9 @@ all_sprites.add(player)
 # Generate random platforms for the initial level
 def generate_platforms():
     platforms.empty()
-    num_platforms = level * 10
-    gap = WIDTH // (num_platforms + 1)
-    for i in range(num_platforms):
-        x = (i + 1) * gap - PLATFORM_WIDTH // 2
+    num_platforms = random.randint(level + 1, level + 5)
+    for _ in range(num_platforms):
+        x = random.randint(0, WIDTH - PLATFORM_WIDTH)
         y = random.randint(100, HEIGHT - 100)
         platform = Platform(x, y)
         all_sprites.add(platform)
