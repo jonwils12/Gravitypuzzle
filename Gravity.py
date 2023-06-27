@@ -93,12 +93,16 @@ player = Player(100, HEIGHT // 2)
 all_sprites.add(player)
 
 # Generate random platforms for the initial level
-for i in range(10):
-    x = random.randint(0, WIDTH - PLATFORM_WIDTH)
-    y = random.randint(100, HEIGHT - 100)
-    platform = Platform(x, y)
-    all_sprites.add(platform)
-    platforms.add(platform)
+def generate_platforms():
+    platforms.empty()
+    for i in range(level * 10):
+        x = random.randint(0, WIDTH - PLATFORM_WIDTH)
+        y = random.randint(100, HEIGHT - 100)
+        platform = Platform(x, y)
+        all_sprites.add(platform)
+        platforms.add(platform)
+
+generate_platforms()
 
 # Create bottom boundary
 bottom_boundary = Platform(0, HEIGHT)
@@ -139,17 +143,11 @@ while running:
     if player.rect.right >= WIDTH:
         score += 1
         level += 1
+        generate_platforms()
 
-        # Clear existing platforms
-        platforms.empty()
-
-        # Generate new platforms for the next level
-        for i in range(level * 10):
-            x = random.randint(0, WIDTH - PLATFORM_WIDTH)
-            y = random.randint(100, HEIGHT - 100)
-            platform = Platform(x, y)
-            all_sprites.add(platform)
-            platforms.add(platform)
+    # Check if player collides with the bottom boundary
+    if pygame.sprite.spritecollide(player, [bottom_boundary], False):
+        player.kill()
 
     # Render
     screen.fill(WHITE)
