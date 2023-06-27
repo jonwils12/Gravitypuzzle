@@ -16,6 +16,7 @@ PLAYER_HEIGHT = 60
 PLAYER_COLOR = (0, 0, 255)
 PLAYER_GRAVITY = 1
 PLAYER_JUMP_FORCE = 20
+PLAYER_SPEED = 5
 
 # Platform properties
 PLATFORM_WIDTH = 100
@@ -63,6 +64,12 @@ class Player(pygame.sprite.Sprite):
     def jump(self):
         self.vel_y = -PLAYER_JUMP_FORCE
 
+    def move_left(self):
+        self.rect.x -= PLAYER_SPEED
+
+    def move_right(self):
+        self.rect.x += PLAYER_SPEED
+
 # Platform class
 class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -103,6 +110,10 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 player.jump()
+            elif event.key == pygame.K_LEFT:
+                player.move_left()
+            elif event.key == pygame.K_RIGHT:
+                player.move_right()
 
     # Update
     all_sprites.update()
@@ -110,10 +121,15 @@ while running:
     # Generate new platforms if player reaches the end
     if player.rect.right >= WIDTH:
         player.rect.right = WIDTH
-        score += 10
+        score += 1
         level += 1
-        for _ in range(level):
-            x = random.randint(WIDTH, WIDTH + 200)
+
+        # Clear existing platforms
+        platforms.empty()
+
+        # Generate new platforms for the next level
+        for i in range(level * 10):
+            x = random.randint(0, WIDTH - PLATFORM_WIDTH)
             y = random.randint(100, HEIGHT - 100)
             platform = Platform(x, y)
             all_sprites.add(platform)
