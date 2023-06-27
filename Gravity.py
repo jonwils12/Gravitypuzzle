@@ -24,7 +24,6 @@ PLATFORM_HEIGHT = 20
 PLATFORM_COLOR = (0, 255, 0)
 
 # Game variables
-level = 1
 score = 0
 
 # Initialize Pygame
@@ -68,12 +67,6 @@ class Player(pygame.sprite.Sprite):
             self.vel_y = -PLAYER_JUMP_FORCE
             self.is_jumping = True
 
-    def move_left(self):
-        self.rect.x -= PLAYER_SPEED
-
-    def move_right(self):
-        self.rect.x += PLAYER_SPEED
-
 # Platform class
 class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -95,10 +88,9 @@ all_sprites.add(player)
 # Generate platforms for the initial level
 def generate_platforms():
     platforms.empty()
-    num_platforms = random.randint(5, 10)
-    for _ in range(num_platforms):
+    for _ in range(10):
         x = random.randint(0, WIDTH - PLATFORM_WIDTH)
-        y = random.randint(HEIGHT // 2, HEIGHT - PLATFORM_HEIGHT)
+        y = random.randint(0, HEIGHT - PLATFORM_HEIGHT)
         platform = Platform(x, y)
         all_sprites.add(platform)
         platforms.add(platform)
@@ -127,34 +119,32 @@ while running:
             elif event.key == pygame.K_RIGHT:
                 right_pressed = False
 
-    # Update
+    # Update player movement
+    if left_pressed:
+        player.rect.x -= PLAYER_SPEED
+    if right_pressed:
+        player.rect.x += PLAYER_SPEED
+
+    # Update player and platforms
     all_sprites.update()
 
-    if left_pressed:
-        player.move_left()
-    if right_pressed:
-        player.move_right()
-
-    # Check if player reaches the end of the level
-    if player.rect.right >= WIDTH:
-        score += 1
-        level += 1
-        generate_platforms()
-
-    # Check if player collides with the bottom boundary
+    # Check if player falls off the screen
     if player.rect.top > HEIGHT:
         player.kill()
+
+    # Check if player reaches the right edge of the screen
+    if player.rect.right >= WIDTH:
+        score += 1
+        generate_platforms()
 
     # Render
     screen.fill(WHITE)
     all_sprites.draw(screen)
 
-    # Draw score and level
+    # Draw score
     font = pygame.font.Font(None, 36)
     score_text = font.render(f"Score: {score}", True, BLACK)
-    level_text = font.render(f"Level: {level}", True, BLACK)
     screen.blit(score_text, (10, 10))
-    screen.blit(level_text, (10, 50))
 
     pygame.display.flip()
     clock.tick(FPS)
