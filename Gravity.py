@@ -20,7 +20,7 @@ GREEN = (0, 255, 0)
 clock = pygame.time.Clock()
 gravity = 0.5
 jump_force = 10
-move_speed = 5
+move_speed = 200  # Pixels per second
 player_size = 30
 player_pos = [50, HEIGHT // 2]
 player_vel = 0
@@ -40,6 +40,8 @@ font = pygame.font.Font(None, 36)
 
 # Game loop
 while True:
+    dt = clock.tick(60) / 1000.0  # Time elapsed in seconds
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -54,18 +56,20 @@ while True:
                     has_won = False
                     level = 1
                     player_pos = [50, HEIGHT // 2]
-            elif event.key == pygame.K_LEFT:
-                player_pos[0] -= move_speed
-            elif event.key == pygame.K_RIGHT:
-                player_pos[0] += move_speed
-            elif event.key == pygame.K_UP:
-                player_pos[1] -= move_speed
-            elif event.key == pygame.K_DOWN:
-                player_pos[1] += move_speed
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        player_pos[0] -= move_speed * dt
+    if keys[pygame.K_RIGHT]:
+        player_pos[0] += move_speed * dt
+    if keys[pygame.K_UP]:
+        player_pos[1] -= move_speed * dt
+    if keys[pygame.K_DOWN]:
+        player_pos[1] += move_speed * dt
 
     # Apply gravity to the player
-    player_vel += gravity
-    player_pos[1] += player_vel
+    player_vel += gravity * dt
+    player_pos[1] += player_vel * dt
 
     # Check for collision with obstacles
     if player_pos[1] >= HEIGHT - player_size:
@@ -107,4 +111,3 @@ while True:
 
     # Update the window
     pygame.display.update()
-    clock.tick(60)
