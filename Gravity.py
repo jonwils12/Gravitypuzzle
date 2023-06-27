@@ -104,11 +104,6 @@ def generate_platforms():
 
 generate_platforms()
 
-# Create bottom boundary
-bottom_boundary = Platform(0, HEIGHT)
-bottom_boundary.rect.width = WIDTH
-all_sprites.add(bottom_boundary)
-
 running = True
 left_pressed = False
 right_pressed = False
@@ -146,7 +141,7 @@ while running:
         generate_platforms()
 
     # Check if player collides with the bottom boundary
-    if pygame.sprite.spritecollide(player, [bottom_boundary], False):
+    if pygame.sprite.spritecollide(player, platforms, False):
         player.kill()
 
     # Render
