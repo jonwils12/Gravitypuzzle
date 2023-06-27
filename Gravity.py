@@ -92,13 +92,13 @@ platforms = pygame.sprite.Group()
 player = Player(100, HEIGHT // 2)
 all_sprites.add(player)
 
-# Generate random platforms for the initial level
+# Generate platforms for the initial level
 def generate_platforms():
     platforms.empty()
-    num_platforms = random.randint(level + 1, level + 5)
+    num_platforms = random.randint(5, 10)
     for _ in range(num_platforms):
         x = random.randint(0, WIDTH - PLATFORM_WIDTH)
-        y = random.randint(100, HEIGHT - 100)
+        y = random.randint(HEIGHT // 2, HEIGHT - PLATFORM_HEIGHT)
         platform = Platform(x, y)
         all_sprites.add(platform)
         platforms.add(platform)
