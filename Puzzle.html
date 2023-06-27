@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gravity Puzzle Game</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+    <script>
+        var canvas = document.getElementById("gameCanvas");
+        var context = canvas.getContext("2d");
+
+        // Player object
+        var player = {
+            x: 50,
+            y: 50,
+            width: 30,
+            height: 30,
+            color: "blue",
+            gravity: 0.2,
+            velocity: 0,
+            isJumping: false
+        };
+
+        // Platform objects
+        var platforms = [
+            { x: 100, y: 200, width: 200, height: 20 },
+            { x: 400, y: 250, width: 200, height: 20 },
+            { x: 600, y: 350, width: 200, height: 20 }
+        ];
+
+        // Enemy objects
+        var enemies = [
+            { x: 300, y: 180, width: 30, height: 30, color: "red", speed: 2 },
+            { x: 500, y: 230, width: 30, height: 30, color: "red", speed: -2 },
+            { x: 700, y: 330, width: 30, height: 30, color: "red", speed: 2 }
+        ];
+
+        // Obstacle objects
+        var obstacles = [
+            { x: 250, y: 180, width: 20, height: 100 },
+            { x: 450, y: 230, width: 20, height: 100 },
+            { x: 650, y: 330, width: 20, height: 100 }
+        ];
+
+        // End goal object
+        var endGoal = {
+            x: 750,
+            y: 350,
+            width: 40,
+            height: 40,
+            color: "green"
+        };
+
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Update game logic
+        function update() {
+            // Apply gravity to the player
+            player.velocity += player.gravity;
+            player.y += player.velocity;
+
+            // Check for collision with platforms
+            for (var i = 0; i < platforms.length; i++) {
+                var platform = platforms[i];
+                if (
+                    player.y + player.height > platform.y &&
+                    player.y < platform.y + platform.height &&
+                    player.x + player.width > platform.x &&
+                    player.x < platform.x + platform.width
+                ) {
+                    player.y = platform.y - player.height;
+                    player.velocity = 0;
+                    player.isJumping = false;
+                }
+            }
+
+            // Update enemy positions
+            for (var i = 0; i < enemies.length; i++) {
+                var enemy = enemies[i];
+                enemy.x += enemy.speed;
+
+                // Reverse direction if enemy reaches the edge of the canvas
+                if (enemy.x <= 0 || enemy.x + enemy.width >= canvas.width) {
+                    enemy.speed *= -1;
+                }
+
+                // Check for collision with player
+                if (
+                    player.y + player.height > enemy.y &&
+                    player.y < enemy.y + enemy.height &&
+                    player.x + player.width > enemy.x &&
+                    player.x < enemy.x + enemy.width
+                ) {
+                    gameOver();
+                    return;
+                }
+            }
+
+            // Check for collision with obstacles
+            for (var i = 0; i < obstacles.length; i++) {
+                var obstacle = obstacles[i];
+                if (
+                    player.y + player.height > obstacle.y &&
+                    player.y < obstacle.y + obstacle.height &&
+                    player.x + player.width > obstacle.x &&
+                    player.x < obstacle.x + obstacle.width
+                ) {
+                    gameOver();
+                    return;
+                }
+            }
+
+            // Check for collision with end goal
+            if (
+                player.y + player.height > endGoal.y &&
+                player.y < endGoal.y + endGoal.height &&
+                player.x + player.width > endGoal.x &&
+                player.x < endGoal.x + endGoal.width
+            ) {
+                gameWin();
+                return;
+            }
+        }
+
+        // Draw game objects
+        function draw() {
+            // Clear the canvas
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw player
+            context.fillStyle = player.color;
+            context.fillRect(player.x, player.y, player.width, player.height);
+
+            // Draw platforms
+            context.fillStyle = "gray";
+            for (var i = 0; i < platforms.length; i++) {
+                var platform = platforms[i];
+                context.fillRect(platform.x, platform.y, platform.width, platform.height);
+            }
+
+            // Draw enemies
+            for (var i = 0; i < enemies.length; i++) {
+                var enemy = enemies[i];
+                context.fillStyle = enemy.color;
+                context.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+            }
+
+            // Draw obstacles
+            context.fillStyle = "black";
+            for (var i = 0; i < obstacles.length; i++) {
+                var obstacle = obstacles[i];
+                context.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            }
+
+            // Draw end goal
+            context.fillStyle = endGoal.color;
+            context.fillRect(endGoal.x, endGoal.y, endGoal.width, endGoal.height);
+        }
+
+        // Handle key press event
+        function handleKeyPress(event) {
+            // Jump when spacebar is pressed
+            if (event.keyCode === 32 && !player.isJumping) {
+                player.velocity = -6;
+                player.isJumping = true;
+            }
+        }
+
+        // Game over logic
+        function gameOver() {
+            alert("Game Over");
+            // TODO: Reset game state or perform any necessary actions
+        }
+
+        // Game win logic
+        function gameWin() {
+            alert("Congratulations! You won!");
+            // TODO: Reset game state or perform any necessary actions
+        }
+
+        // Initialize the game
+        function init() {
+            // Set event listener for key press
+            document.addEventListener("keydown", handleKeyPress);
+
+            gameLoop();
+        }
+
+        init();
+    </script>
+</body>
+</html>
