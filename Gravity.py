@@ -42,6 +42,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.vel_y = 0
+        self.is_jumping = False
 
     def update(self):
         self.vel_y += PLAYER_GRAVITY
@@ -53,6 +54,7 @@ class Player(pygame.sprite.Sprite):
                 if self.vel_y > 0:
                     self.rect.bottom = platform.rect.top
                     self.vel_y = 0
+                    self.is_jumping = False
                 elif self.vel_y < 0:
                     self.rect.top = platform.rect.bottom
                     self.vel_y = 0
@@ -62,7 +64,9 @@ class Player(pygame.sprite.Sprite):
             self.kill()
 
     def jump(self):
-        self.vel_y = -PLAYER_JUMP_FORCE
+        if not self.is_jumping:
+            self.vel_y = -PLAYER_JUMP_FORCE
+            self.is_jumping = True
 
     def move_left(self):
         self.rect.x -= PLAYER_SPEED
@@ -102,6 +106,9 @@ bottom_boundary.rect.width = WIDTH
 all_sprites.add(bottom_boundary)
 
 running = True
+left_pressed = False
+right_pressed = False
+
 while running:
     # Process events
     for event in pygame.event.get():
@@ -111,16 +118,25 @@ while running:
             if event.key == pygame.K_SPACE:
                 player.jump()
             elif event.key == pygame.K_LEFT:
-                player.move_left()
+                left_pressed = True
             elif event.key == pygame.K_RIGHT:
-                player.move_right()
+                right_pressed = True
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_LEFT:
+                left_pressed = False
+            elif event.key == pygame.K_RIGHT:
+                right_pressed = False
 
     # Update
     all_sprites.update()
 
-    # Generate new platforms if player reaches the end
+    if left_pressed:
+        player.move_left()
+    if right_pressed:
+        player.move_right()
+
+    # Check if player reaches the end of the level
     if player.rect.right >= WIDTH:
-        player.rect.right = WIDTH
         score += 1
         level += 1
 
