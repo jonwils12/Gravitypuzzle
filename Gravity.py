@@ -95,8 +95,10 @@ all_sprites.add(player)
 # Generate random platforms for the initial level
 def generate_platforms():
     platforms.empty()
-    for i in range(level * 10):
-        x = random.randint(0, WIDTH - PLATFORM_WIDTH)
+    num_platforms = level * 10
+    gap = WIDTH // (num_platforms + 1)
+    for i in range(num_platforms):
+        x = (i + 1) * gap - PLATFORM_WIDTH // 2
         y = random.randint(100, HEIGHT - 100)
         platform = Platform(x, y)
         all_sprites.add(platform)
@@ -114,12 +116,12 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                player.jump()
-            elif event.key == pygame.K_LEFT:
+            if event.key == pygame.K_LEFT:
                 left_pressed = True
             elif event.key == pygame.K_RIGHT:
                 right_pressed = True
+            elif event.key == pygame.K_SPACE:
+                player.jump()
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT:
                 left_pressed = False
@@ -159,4 +161,3 @@ while running:
     clock.tick(FPS)
 
 pygame.quit()
-
