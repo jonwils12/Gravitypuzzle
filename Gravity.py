@@ -9,6 +9,7 @@ FPS = 60
 # Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+PLATFORM_COLOR = (0, 255, 0)
 
 # Player properties
 PLAYER_WIDTH = 40
@@ -21,10 +22,7 @@ PLAYER_SPEED = 5
 # Platform properties
 PLATFORM_WIDTH = 100
 PLATFORM_HEIGHT = 20
-PLATFORM_COLOR = (0, 255, 0)
-
-# Game variables
-score = 0
+PLATFORM_GAP_RANGE = (200, 300)
 
 # Initialize Pygame
 pygame.init()
@@ -38,8 +36,8 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.Surface((PLAYER_WIDTH, PLAYER_HEIGHT))
         self.image.fill(PLAYER_COLOR)
         self.rect = self.image.get_rect()
-        self.rect.centerx = WIDTH // 2
-        self.rect.bottom = HEIGHT - 10
+        self.rect.x = 50
+        self.rect.y = HEIGHT // 2
         self.vel_y = 0
         self.is_jumping = False
 
@@ -60,21 +58,21 @@ class Player(pygame.sprite.Sprite):
 
         # Handle player movement
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            self.rect.x -= PLAYER_SPEED
-        if keys[pygame.K_RIGHT]:
-            self.rect.x += PLAYER_SPEED
-
-    def jump(self):
-        if not self.is_jumping:
+        if keys[pygame.K_SPACE] and not self.is_jumping:
             self.vel_y = -PLAYER_JUMP_FORCE
             self.is_jumping = True
 
+    def reset(self):
+        self.rect.x = 50
+        self.rect.y = HEIGHT // 2
+        self.vel_y = 0
+        self.is_jumping = False
+
 # Platform class
 class Platform(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, width):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((PLATFORM_WIDTH, PLATFORM_HEIGHT))
+        self.image = pygame.Surface((width, PLATFORM_HEIGHT))
         self.image.fill(PLATFORM_COLOR)
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -88,51 +86,43 @@ platforms = pygame.sprite.Group()
 player = Player()
 all_sprites.add(player)
 
-# Generate random platforms
-def generate_platforms():
+# Generate random level
+def generate_level():
     platforms.empty()
-    for _ in range(10):
-        x = random.randint(0, WIDTH - PLATFORM_WIDTH)
-        y = random.randint(100, HEIGHT - PLATFORM_HEIGHT)
-        platform = Platform(x, y)
-        all_sprites.add(platform)
+    x = 0
+    while x < WIDTH:
+        gap = random.randint(*PLATFORM_GAP_RANGE)
+        platform_width = random.randint(PLATFORM_WIDTH, PLATFORM_WIDTH + gap)
+        platform = Platform(x, random.randint(100, HEIGHT - PLATFORM_HEIGHT), platform_width)
         platforms.add(platform)
+        all_sprites.add(platform)
+        x += platform_width + gap
 
-generate_platforms()
+# Generate initial level
+generate_level()
 
 running = True
-
 while running:
     # Process events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                player.jump()
 
-    # Update player and platforms
+    # Update
     all_sprites.update()
 
     # Check if player falls off the screen
     if player.rect.top > HEIGHT:
-        player.rect.bottom = HEIGHT
-        player.vel_y = 0
-        player.is_jumping = False
+        player.reset()
 
-    # Check if player reaches the right edge of the screen
+    # Check if player reaches the end of the level
     if player.rect.right >= WIDTH:
-        score += 1
-        generate_platforms()
+        player.reset()
+        generate_level()
 
     # Render
     screen.fill(WHITE)
     all_sprites.draw(screen)
-
-    # Draw score
-    font = pygame.font.Font(None, 36)
-    score_text = font.render(f"Score: {score}", True, BLACK)
-    screen.blit(score_text, (10, 10))
 
     pygame.display.flip()
     clock.tick(FPS)
